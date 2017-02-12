@@ -63,8 +63,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\CenterMass.cs" />
+    <Compile Include="Assets\Scripts\DañoBala.cs" />
     <Compile Include="Assets\Scripts\PlayerMove.cs" />
+    <Compile Include="Assets\Scripts\Vida.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

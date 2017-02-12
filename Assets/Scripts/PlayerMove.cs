@@ -28,16 +28,31 @@ public class PlayerMove : NetworkBehaviour {
     public bool SacarGuardar;
     public bool Disparar;
 
+    //Disparo
+    public GameObject Bala;
+    public Transform SpawnBala;
+    public int VelocidadBala;
+    void Start()
+    {
+        Animator anim = GetComponent<Animator>();
+
+        anim.SetLayerWeight(1, 2f);
+        anim.SetLayerWeight(2, 2f);
+
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+        cam.SetActive(true);
+    }
     void Update()
     {
         if (!isLocalPlayer)
         {
             return;
         }
-        cam.SetActive(true);
         CharacterController controller = GetComponent<CharacterController>();
         Animator anim = GetComponent<Animator>();
-        Rpcsetlayer();
 
         //Animacion
         andar = Mathf.Abs(Input.GetAxis("Horizontal"))> Mathf.Abs(Input.GetAxis("Horizontal"))? Mathf.Abs(Input.GetAxis("Vertical")): Mathf.Abs(Input.GetAxis("Vertical"));
@@ -46,7 +61,12 @@ public class PlayerMove : NetworkBehaviour {
         anim.SetFloat("Andando",andar);
         anim.SetBool(Animator.StringToHash("SacarGuardarArma"), SacarGuardar);
         anim.SetBool(Animator.StringToHash("Disparar"), Disparar);
-
+        //Disparo
+        if (SacarGuardar == true)
+            if (Input.GetButtonDown("Fire1"))
+            {
+                CmdSpawnBala();
+            }
         //Rotacion
         //x
         yRot += Input.GetAxis("Mouse X") * sensX;
@@ -71,12 +91,18 @@ public class PlayerMove : NetworkBehaviour {
         moveDirection.y -= gravity * Time.deltaTime;
         controller.Move(multiplier*moveDirection * Time.deltaTime);
     }
-
-    [ClientRpc]
-    void Rpcsetlayer()
+    [Command]
+    void CmdSpawnBala()
     {
-        Animator anim = GetComponent<Animator>();
-        anim.SetLayerWeight(1, 2f);
-        anim.SetLayerWeight(2, 2f);
+        //GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
+        //bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
+        RpcSapwn();
+        
+    }
+    [ClientRpc]
+    void RpcSapwn()
+    {
+        GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
+        bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
     }
 }
