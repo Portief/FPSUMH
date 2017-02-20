@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.Networking;
 
+//[NetworkSettings(sendInterval =0.001f)]
 public class PlayerMove : NetworkBehaviour {
     //Movimiento
     public float speed = 6.0F;
@@ -29,9 +29,9 @@ public class PlayerMove : NetworkBehaviour {
     public bool Disparar;
 
     //Disparo
-    public GameObject Bala;
-    public Transform SpawnBala;
-    public int VelocidadBala;
+    //public GameObject Bala;
+    //public Transform SpawnBala;
+    //public int VelocidadBala;
     void Start()
     {
         Animator anim = GetComponent<Animator>();
@@ -45,6 +45,7 @@ public class PlayerMove : NetworkBehaviour {
         }
         cam.SetActive(true);
     }
+    [ClientCallback]
     void Update()
     {
         if (!isLocalPlayer)
@@ -62,11 +63,13 @@ public class PlayerMove : NetworkBehaviour {
         anim.SetBool(Animator.StringToHash("SacarGuardarArma"), SacarGuardar);
         anim.SetBool(Animator.StringToHash("Disparar"), Disparar);
         //Disparo
+        /*
         if (SacarGuardar == true)
             if (Input.GetButtonDown("Fire1"))
             {
                 CmdSpawnBala();
             }
+        */
         //Rotacion
         //x
         yRot += Input.GetAxis("Mouse X") * sensX;
@@ -74,7 +77,6 @@ public class PlayerMove : NetworkBehaviour {
         //y
         if (Input.GetAxis("Mouse Y") > 0 ? Vector3.Angle(cam.transform.forward, transform.up) > MaxCameraRotation : Vector3.Angle(cam.transform.forward, transform.up) < MinCameraRotation)
         {
-            Debug.Log(Input.GetAxis("Mouse Y"));
             //rotatePOV (new Vector3 (-Input.GetAxis ("Mouse Y") * MouseSpeed * Time.deltaTime, 0, 0));
                anim.SetFloat(Animator.StringToHash("LongitudColumna"), Mathf.Lerp(0, 1, anim.GetFloat(Animator.StringToHash("LongitudColumna")) - Input.GetAxis("Mouse Y") * sensY * Time.deltaTime));
         }
@@ -91,18 +93,24 @@ public class PlayerMove : NetworkBehaviour {
         moveDirection.y -= gravity * Time.deltaTime;
         controller.Move(multiplier*moveDirection * Time.deltaTime);
     }
+    /*
     [Command]
     void CmdSpawnBala()
     {
-        //GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
-        //bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
-        RpcSapwn();
+        GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
+        bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
+        NetworkServer.Spawn(bullet);
+        Destroy(bullet,4.0f);
+        //RpcSapwn();
         
     }
+    */
+    /*
     [ClientRpc]
     void RpcSapwn()
     {
         GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
         bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
     }
+    */
 }

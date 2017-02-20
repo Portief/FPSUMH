@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEngine.Networking;
 
-public class DañoBala : NetworkBehaviour{
+public class DañoBala : MonoBehaviour{
     public int Daño = 10;
 	// Use this for initialization
 	void Start () {
@@ -14,12 +13,4 @@ public class DañoBala : NetworkBehaviour{
 	void Update () {
 	
 	}
-    void OnCollisionEnter(Collision Colision)
-    {
-        if (Colision.gameObject.GetComponent<Vida>()!=null)
-        {
-            Colision.gameObject.GetComponent<Vida>().TakeDamage(Daño);
-            Destroy(this.gameObject);
-        }
-    }
 }

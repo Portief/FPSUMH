@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.Networking;
-
+//[NetworkSettings(sendInterval = 0.01f)]
 public class Vida : NetworkBehaviour {
     public const int MaxVida=100;
     [SyncVar (hook = "ActualizarVida")]public int ActualVida=MaxVida;
