@@ -3,13 +3,11 @@ using UnityEngine.Networking;
 
 //[NetworkSettings(sendInterval =0.001f)]
 public class PlayerMove : NetworkBehaviour {
-    //Movimiento
+    //Movement
     public float speed = 6.0F;
     public float jumpSpeed = 8.0F;
-    public float gravity = 20.0F;
-    public float multiplier;
 
-    //Rotacion
+    //Rotation
     //x
     public float sensX;
     public GameObject cam;
@@ -22,16 +20,9 @@ public class PlayerMove : NetworkBehaviour {
     public float sensY;
 
     //Animaciones
-    private float andar;
-    private int sg;
-    private int d;
-    public bool SacarGuardar;
-    public bool Disparar;
-
-    //Disparo
-    //public GameObject Bala;
-    //public Transform SpawnBala;
-    //public int VelocidadBala;
+    private float walk;
+    public bool TakeWeapon = true;
+    public bool Shoot;
     void Start()
     {
         Animator anim = GetComponent<Animator>();
@@ -45,6 +36,7 @@ public class PlayerMove : NetworkBehaviour {
         }
         cam.SetActive(true);
     }
+
     [ClientCallback]
     void Update()
     {
@@ -52,65 +44,55 @@ public class PlayerMove : NetworkBehaviour {
         {
             return;
         }
+
         CharacterController controller = GetComponent<CharacterController>();
         Animator anim = GetComponent<Animator>();
+        //Rotation
+        Rotation(anim,GetComponent<State>().Stunned);
+        //Movement
+        Move(controller,anim, GetComponent<State>().Stunned, GetComponent<State>().Slowdown);
+    }
+    public void Rotation(Animator anim,bool stunned)
+    {
+        if (!stunned)
+        {
+            //x
+            yRot += Input.GetAxis("Mouse X") * sensX;
+            transform.eulerAngles = new Vector3(0.0f, yRot, 0.0f);
 
-        //Animacion
-        andar = Mathf.Abs(Input.GetAxis("Horizontal"))> Mathf.Abs(Input.GetAxis("Horizontal"))? Mathf.Abs(Input.GetAxis("Vertical")): Mathf.Abs(Input.GetAxis("Vertical"));
-        SacarGuardar = Input.GetButton("Fire2") ? true : SacarGuardar;
-        Disparar = Input.GetButton("Fire1") ? true:false;
-        anim.SetFloat("Andando",andar);
-        anim.SetBool(Animator.StringToHash("SacarGuardarArma"), SacarGuardar);
-        anim.SetBool(Animator.StringToHash("Disparar"), Disparar);
-        //Disparo
-        /*
-        if (SacarGuardar == true)
-            if (Input.GetButtonDown("Fire1"))
+            //y,Anim
+            if (Input.GetAxis("Mouse Y") > 0 ? Vector3.Angle(cam.transform.forward, transform.up) > MaxCameraRotation : Vector3.Angle(cam.transform.forward, transform.up) < MinCameraRotation)
             {
-                CmdSpawnBala();
+                //rotatePOV (new Vector3 (-Input.GetAxis ("Mouse Y") * MouseSpeed * Time.deltaTime, 0, 0));
+                anim.SetFloat(Animator.StringToHash("LongitudColumna"), Mathf.Lerp(0, 1, anim.GetFloat(Animator.StringToHash("LongitudColumna")) - Input.GetAxis("Mouse Y") * sensY * Time.deltaTime));
             }
-        */
-        //Rotacion
-        //x
-        yRot += Input.GetAxis("Mouse X") * sensX;
-        transform.eulerAngles = new Vector3(0.0f, yRot, 0.0f);
-        //y
-        if (Input.GetAxis("Mouse Y") > 0 ? Vector3.Angle(cam.transform.forward, transform.up) > MaxCameraRotation : Vector3.Angle(cam.transform.forward, transform.up) < MinCameraRotation)
-        {
-            //rotatePOV (new Vector3 (-Input.GetAxis ("Mouse Y") * MouseSpeed * Time.deltaTime, 0, 0));
-               anim.SetFloat(Animator.StringToHash("LongitudColumna"), Mathf.Lerp(0, 1, anim.GetFloat(Animator.StringToHash("LongitudColumna")) - Input.GetAxis("Mouse Y") * sensY * Time.deltaTime));
         }
-        //Movimiento
-        if (controller.isGrounded)
+    }
+    public void Move(CharacterController controller, Animator anim,bool stunned,float slowdown)
+    {
+        if (!stunned)
         {
-            moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-            moveDirection = transform.TransformDirection(moveDirection);
-            moveDirection *= speed;
-            if (Input.GetButton("Jump"))
-               moveDirection.y = jumpSpeed;
+            //Animation
+            //Move
+            walk = Mathf.Abs(Input.GetAxis("Horizontal")) > Mathf.Abs(Input.GetAxis("Horizontal")) ? Mathf.Abs(Input.GetAxis("Vertical")) : Mathf.Abs(Input.GetAxis("Vertical"));
+            anim.SetFloat("Andando", walk);
+            //Shoot
+            Shoot = Input.GetButton("Fire1") ? true : false;
+            anim.SetBool(Animator.StringToHash("SacarGuardarArma"), TakeWeapon);
+            anim.SetBool(Animator.StringToHash("Disparar"), Shoot);
 
+
+            if (controller.isGrounded)
+            {
+                moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+                moveDirection = transform.TransformDirection(moveDirection);
+                moveDirection *= speed;
+                if (Input.GetButton("Jump"))
+                    moveDirection.y = jumpSpeed;
+
+            }
+            moveDirection.y -= Physics.gravity.magnitude* Time.deltaTime;
+            controller.Move(GlobalVariables.multiplier * moveDirection * Time.deltaTime - GlobalVariables.multiplier * slowdown * moveDirection * Time.deltaTime);
         }
-        moveDirection.y -= gravity * Time.deltaTime;
-        controller.Move(multiplier*moveDirection * Time.deltaTime);
     }
-    /*
-    [Command]
-    void CmdSpawnBala()
-    {
-        GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
-        bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
-        NetworkServer.Spawn(bullet);
-        Destroy(bullet,4.0f);
-        //RpcSapwn();
-        
-    }
-    */
-    /*
-    [ClientRpc]
-    void RpcSapwn()
-    {
-        GameObject bullet = (GameObject)Instantiate(Bala, SpawnBala.position, Quaternion.identity);
-        bullet.GetComponent<Rigidbody>().velocity = SpawnBala.forward * VelocidadBala;
-    }
-    */
 }

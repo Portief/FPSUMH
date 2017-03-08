@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 98819486c17212340bf0bdc264209750
+timeCreated: 1488327881
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - "Ca\xF1onGauss": {fileID: 124122, guid: 43c05c01df87c0646a4665d47cc00834, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

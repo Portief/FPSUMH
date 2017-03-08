@@ -10,15 +10,18 @@ public class PlayerSetUp : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
+        //Change the name of the players whit the id
         playerId = GetComponent<NetworkIdentity>().netId;
         string netId = playerId.ToString();
-        Diccionario.RegisterPlayer(netId, this.gameObject);
-
+        RegisterPlayers.RegisterPlayer(netId, this.gameObject);
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        foreach (GameObject x in RegisterPlayers.players.Values)
+        {
+            //Debug.Log(x);
+        }
     }
 }
