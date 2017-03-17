@@ -3,14 +3,18 @@ using UnityEngine.Networking;
 
 //[NetworkSettings(sendInterval =0.001f)]
 public class PlayerMove : NetworkBehaviour {
+
+    //Objects
+    private Objects ObjectWeapons;
+
     //Movement
+    public CharacterController controller;
     public float speed = 6.0F;
     public float jumpSpeed = 8.0F;
 
     //Rotation
     //x
     public float sensX;
-    public GameObject cam;
     private Vector3 moveDirection = Vector3.zero;
     private float yRot= 0;
     private Quaternion characterTargetRot;
@@ -20,12 +24,15 @@ public class PlayerMove : NetworkBehaviour {
     public float sensY;
 
     //Animaciones
+    private Animator anim;
     private float walk;
     public bool TakeWeapon = true;
-    public bool Shoot;
+
     void Start()
     {
-        Animator anim = GetComponent<Animator>();
+
+        controller = GetComponent<CharacterController>();
+        anim = GetComponent<Animator>();
 
         anim.SetLayerWeight(1, 2f);
         anim.SetLayerWeight(2, 2f);
@@ -34,7 +41,8 @@ public class PlayerMove : NetworkBehaviour {
         {
             return;
         }
-        cam.SetActive(true);
+        ObjectWeapons = GetComponent<Objects>();
+        ObjectWeapons.Cam.SetActive(true);
     }
 
     [ClientCallback]
@@ -45,10 +53,9 @@ public class PlayerMove : NetworkBehaviour {
             return;
         }
 
-        CharacterController controller = GetComponent<CharacterController>();
-        Animator anim = GetComponent<Animator>();
         //Rotation
         Rotation(anim,GetComponent<State>().Stunned);
+
         //Movement
         Move(controller,anim, GetComponent<State>().Stunned, GetComponent<State>().Slowdown);
     }
@@ -61,7 +68,7 @@ public class PlayerMove : NetworkBehaviour {
             transform.eulerAngles = new Vector3(0.0f, yRot, 0.0f);
 
             //y,Anim
-            if (Input.GetAxis("Mouse Y") > 0 ? Vector3.Angle(cam.transform.forward, transform.up) > MaxCameraRotation : Vector3.Angle(cam.transform.forward, transform.up) < MinCameraRotation)
+            if (Input.GetAxis("Mouse Y") > 0 ? Vector3.Angle(ObjectWeapons.Cam.transform.forward, transform.up) > MaxCameraRotation : Vector3.Angle(ObjectWeapons.Cam.transform.forward, transform.up) < MinCameraRotation)
             {
                 //rotatePOV (new Vector3 (-Input.GetAxis ("Mouse Y") * MouseSpeed * Time.deltaTime, 0, 0));
                 anim.SetFloat(Animator.StringToHash("LongitudColumna"), Mathf.Lerp(0, 1, anim.GetFloat(Animator.StringToHash("LongitudColumna")) - Input.GetAxis("Mouse Y") * sensY * Time.deltaTime));
@@ -76,10 +83,6 @@ public class PlayerMove : NetworkBehaviour {
             //Move
             walk = Mathf.Abs(Input.GetAxis("Horizontal")) > Mathf.Abs(Input.GetAxis("Horizontal")) ? Mathf.Abs(Input.GetAxis("Vertical")) : Mathf.Abs(Input.GetAxis("Vertical"));
             anim.SetFloat("Andando", walk);
-            //Shoot
-            Shoot = Input.GetButton("Fire1") ? true : false;
-            anim.SetBool(Animator.StringToHash("SacarGuardarArma"), TakeWeapon);
-            anim.SetBool(Animator.StringToHash("Disparar"), Shoot);
 
 
             if (controller.isGrounded)

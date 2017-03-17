@@ -5,6 +5,7 @@ public class State : MonoBehaviour {
 
     //Estados
     public bool Stunned;
+    public bool Silenced;
     public float Slowdown=0.0f;
     // Use this for initialization
     void Start () {
@@ -21,6 +22,11 @@ public class State : MonoBehaviour {
         Stunned = stunned;
         StartCoroutine(TimeStun(durationTime));
     }
+    public void Silence(bool silenced, float durationTime)
+    {
+        Silenced = silenced;
+        StartCoroutine(TimeSilence(durationTime));
+    }
     public void Slow(float slowdown,float durationTime)
     {
         Slowdown = slowdown;
@@ -30,6 +36,11 @@ public class State : MonoBehaviour {
     {
         yield return new WaitForSeconds(time);
         Stunned = false;
+    }
+    public IEnumerator TimeSilence(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Silenced = false;
     }
     public IEnumerator TimeSlow(float time)
     {

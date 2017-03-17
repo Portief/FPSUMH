@@ -3,8 +3,10 @@ using UnityEngine.Networking;
 using System.Collections.Generic;
 
 public class Grenade : NetworkBehaviour {
+
     private Rigidbody myrigidbody;
     public int damage = 10;
+
 	// Use this for initialization
 	void Start () {
         myrigidbody = GetComponent<Rigidbody>();

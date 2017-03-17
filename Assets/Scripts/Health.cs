@@ -5,8 +5,8 @@ using UnityEngine.Networking;
 
 //[NetworkSettings(sendInterval = 0.01f)]
 public class Health : NetworkBehaviour {
-    public const int MaxHealth=100;
-    [SyncVar (hook = "UpdateHealth")]public int CurrentHealth= MaxHealth;
+    public const float MaxHealth=100.0f;
+    [SyncVar (hook = "UpdateHealth")]public float CurrentHealth= MaxHealth;
     public RectTransform PrivateToolHealth;
     public RectTransform PublicToolHealth;
     // Use this for initialization
@@ -18,7 +18,7 @@ public class Health : NetworkBehaviour {
 	void Update () {
 	
 	}
-    public void TakeDamage(int damage)
+    public void TakeDamage(float damage)
     {
         if (!isServer)
         {
@@ -30,7 +30,7 @@ public class Health : NetworkBehaviour {
            Debug.Log("Die");
         }
     }
-    public void UpdateHealth(int health)
+    public void UpdateHealth(float health)
     {
         PrivateToolHealth.sizeDelta = new Vector2(health * 2, PrivateToolHealth.sizeDelta.y);
         PublicToolHealth.sizeDelta = new Vector2(health * 2, PublicToolHealth.sizeDelta.y);

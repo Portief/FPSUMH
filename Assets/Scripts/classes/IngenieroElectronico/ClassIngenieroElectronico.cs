@@ -1,8 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
+using System.Collections.Generic;
 
-public class ClassIngenieroElectronico : NetworkBehaviour, BaseClass {
+public class ClassIngenieroElectronico : NetworkBehaviour, BaseClass
+{
+
+    //Objects
+    private Objects objectWeapons;
+    private Shoot myWeaponShoot;
 
     //Cooldowns
     public bool CooldownQ = true;
@@ -23,77 +29,150 @@ public class ClassIngenieroElectronico : NetworkBehaviour, BaseClass {
     public float Angle = 30;
     public float SpeedGrenade = 15;
 
+    //Variables Click D
+    private int numberBullets;
+    public int DefaultWeapon;
+    public int NewWeapon;
+    public bool IncreasedBullet = false;
+
     // Use this for initialization
-    void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    void Start()
+    {
+        objectWeapons = GetComponent<Objects>();
+        myWeaponShoot = GetComponent<Shoot>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
         if (!isLocalPlayer)
         {
             return;
         }
-
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            Q();
+            Q(GetComponent<State>().Silenced);
         }
         else if (Input.GetKeyDown(KeyCode.E))
         {
-            E();
+            E(GetComponent<State>().Silenced);
         }
         else if (Input.GetButtonDown("Fire2"))
         {
-            D();
+            D(GetComponent<State>().Silenced);
         }
         else if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            SI();
+            SI(GetComponent<State>().Silenced);
+        }
+        functionRealTimeD();
+    }
+    void functionRealTimeD()
+    {
+        if (IncreasedBullet)
+        {
+            if (myWeaponShoot.counterBullet == numberBullets)
+            {
+                StartCoroutine(TimeCooldown(3, TimeD));
+                foreach (KeyValuePair<int, PropertiesWeapon> x in myWeaponShoot.ObjectWeapons.arsenal.Weapons)
+                {
+                    if (DefaultWeapon == x.Key)
+                    {
+                        x.Value.IsUsing = true;
+                    }
+                    if (NewWeapon == x.Key)
+                    {
+                        x.Value.IsUsing = false;
+                    }
+                }
+                myWeaponShoot.SearchAndAssignInLibraryWeapon();
+                IncreasedBullet = false;
+            }
         }
     }
     [Command]
-    void CmdGrenadeServer()
+    void CmdGrenadeServer(float angleincremental)
     {
         GameObject instanceGrenade = (GameObject)Instantiate(Grenade, SpawnGrenade.transform.position, Quaternion.identity);
-        instanceGrenade.GetComponent<Rigidbody>().velocity =SpawnGrenade.transform.TransformDirection( new Vector3(0, Mathf.Sin(Angle * Mathf.Deg2Rad) * SpeedGrenade, Mathf.Cos(Angle * Mathf.Deg2Rad) * SpeedGrenade));
-        RpcBulletClient();
+        instanceGrenade.GetComponent<Rigidbody>().velocity = SpawnGrenade.transform.TransformDirection(new Vector3(0, Mathf.Sin((Angle + angleincremental) * Mathf.Deg2Rad) * SpeedGrenade, Mathf.Cos((Angle + angleincremental) * Mathf.Deg2Rad) * SpeedGrenade));
+        RpcBulletClient(angleincremental);
     }
     [ClientRpc]
-    void RpcBulletClient()
+    void RpcBulletClient(float angleincremental)
     {
-        if (!isServer) {
+
+        if (!isServer)
+        {
             GameObject instanceGrenade = (GameObject)Instantiate(Grenade, SpawnGrenade.transform.position, Quaternion.identity);
-            instanceGrenade.GetComponent<Rigidbody>().velocity = SpawnGrenade.transform.TransformDirection(new Vector3(0, Mathf.Sin(Angle * Mathf.Deg2Rad) * SpeedGrenade, Mathf.Cos(Angle * Mathf.Deg2Rad) * SpeedGrenade));
+            instanceGrenade.GetComponent<Rigidbody>().velocity = SpawnGrenade.transform.TransformDirection(new Vector3(0, Mathf.Sin((Angle + angleincremental) * Mathf.Deg2Rad) * SpeedGrenade, Mathf.Cos((Angle + angleincremental) * Mathf.Deg2Rad) * SpeedGrenade));
         }
     }
-    public void Q()
+    public void Q(bool silenced)
     {
-        if(Cooldown(1))
-        {
-            CmdGrenadeServer();
-        }
+        if (!silenced)
+            if (Cooldown(1))
+            {
+                float angle;
+                Vector3 cameraForward = objectWeapons.Cam.transform.forward;
+                Vector3 cameraBase = objectWeapons.Player.transform.forward;
+                Vector3 sign = cameraForward - cameraBase;
+                if (sign.y >= 0)
+                {
+                    angle = Mathf.Acos((cameraForward.x * cameraBase.x + cameraForward.y * cameraBase.y + cameraForward.z * cameraBase.z) / (cameraForward.magnitude * cameraBase.magnitude)) / Mathf.Deg2Rad;
+                }
+                else
+                {
+                    angle = -Mathf.Acos((cameraForward.x * cameraBase.x + cameraForward.y * cameraBase.y + cameraForward.z * cameraBase.z) / (cameraForward.magnitude * cameraBase.magnitude)) / Mathf.Deg2Rad;
+                }
+                CmdGrenadeServer(angle);
+            }
     }
-    public void E()
+    public void E(bool silenced)
     {
-        if (Cooldown(2))
-        {
-            Debug.Log("E");
-        }
+        if (!silenced)
+            if (Cooldown(2))
+            {
+                Debug.Log("E");
+            }
     }
-    public void D()
+    public void D(bool silenced)
     {
-        if (Cooldown(3))
-        {
-            Debug.Log("D");
-        }
+        if (!silenced)
+            if (myWeaponShoot.RechargeWeapon == false)
+            {
+                if (Cooldown(3))
+                {
+                    DefaultWeapon = myWeaponShoot.ConfigurationActive;
+                    myWeaponShoot.counterBullet = 0;
+                    foreach (KeyValuePair<int, PropertiesWeapon> x in myWeaponShoot.ObjectWeapons.arsenal.Weapons)
+                    {
+                        if (x.Key == DefaultWeapon)
+                        {
+                            x.Value.IsUsing = false;
+                            string nameWeapon = x.Value.Name;
+                            foreach (KeyValuePair<int, PropertiesWeapon> xi in myWeaponShoot.ObjectWeapons.arsenal.Weapons)
+                            {
+                                if (xi.Value.Name == nameWeapon + "Increased")
+                                {
+                                    numberBullets = xi.Value.NumberBullets;
+                                    NewWeapon = xi.Key;
+                                    xi.Value.IsUsing = true;
+                                    myWeaponShoot.SearchAndAssignInLibraryWeapon();
+                                    IncreasedBullet = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
     }
-    public void SI()
+    public void SI(bool silenced)
     {
-        if (Cooldown(4))
-        {
-            Debug.Log("Click D");
-        }
+        if (!silenced)
+            if (Cooldown(4))
+            {
+
+            }
     }
     public bool Cooldown(int hability)
     {
@@ -103,7 +182,7 @@ public class ClassIngenieroElectronico : NetworkBehaviour, BaseClass {
                 if (CooldownQ)
                 {
                     CooldownQ = false;
-                    StartCoroutine(TimeCooldown(1,TimeQ));
+                    StartCoroutine(TimeCooldown(1, TimeQ));
                     return true;
                 }
                 else
@@ -114,7 +193,7 @@ public class ClassIngenieroElectronico : NetworkBehaviour, BaseClass {
                 if (CooldownE)
                 {
                     CooldownE = false;
-                    StartCoroutine(TimeCooldown(2,TimeE));
+                    StartCoroutine(TimeCooldown(2, TimeE));
                     return true;
                 }
                 else
@@ -125,7 +204,6 @@ public class ClassIngenieroElectronico : NetworkBehaviour, BaseClass {
                 if (CooldownD)
                 {
                     CooldownD = false;
-                    StartCoroutine(TimeCooldown(3, TimeD));
                     return true;
                 }
                 else
