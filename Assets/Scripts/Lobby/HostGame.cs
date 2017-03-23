@@ -9,11 +9,11 @@ public class HostGame : MonoBehaviour
 
     private string roomName;
 
-    public NetworkManager networkManager;
+    private NetworkManager networkManager;
 
     void Start()
     {
-        
+        networkManager = NetworkManager.singleton;
         if (networkManager.matchMaker == null)
             networkManager.StartMatchMaker();
     }

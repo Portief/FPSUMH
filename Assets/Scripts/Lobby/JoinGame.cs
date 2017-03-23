@@ -61,7 +61,7 @@ public class JoinGame : MonoBehaviour {
     }
     void ClearRoomList ()
     {
-        for(int i = 0; i < roomList.Count; i--)
+        for(int i = 0; i < roomList.Count; i++)
         {
             Destroy(roomList[i]);
         }

@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2015
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FpsUmhRepositorio.CSharp", "FpsUmhRepositorio.CSharp.csproj", "{89FBA2CD-D7E1-51CE-C57B-F6127DC21943}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FpsUmhRepositorio.CSharp.Editor", "FpsUmhRepositorio.CSharp.Editor.csproj", "{2D834FAB-A97E-93D0-E58B-C21D7A2BA32A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{89FBA2CD-D7E1-51CE-C57B-F6127DC21943}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89FBA2CD-D7E1-51CE-C57B-F6127DC21943}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89FBA2CD-D7E1-51CE-C57B-F6127DC21943}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D834FAB-A97E-93D0-E58B-C21D7A2BA32A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D834FAB-A97E-93D0-E58B-C21D7A2BA32A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D834FAB-A97E-93D0-E58B-C21D7A2BA32A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D834FAB-A97E-93D0-E58B-C21D7A2BA32A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
